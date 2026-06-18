@@ -33,7 +33,7 @@ jobs:
           gcc --version
 
       - name: 编译 asmc
-        run: make all
+        run: make
 
       - name: 列出产物
         run: ls -la
