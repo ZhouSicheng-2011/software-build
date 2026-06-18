@@ -110,10 +110,10 @@ jobs:
           shell: pwsh
           run: |
             # 确保 lib 目录存在并复制库文件
-            tar -czvf bit7z-${{ github.event.inputs.bit7z_version }}-windows-msvc.tar.gz \
-              ./bit7z-${{ github.event.inputs.bit7z_version }}/include \
-              ./bit7z-${{ github.event.inputs.bit7z_version }}/lib \
-              ./bit7z-${{ github.event.inputs.bit7z_version }}/cmake-opts.txt \
+            tar -czvf bit7z-${{ github.event.inputs.bit7z_version }}-windows-msvc.tar.gz `
+              ./bit7z-${{ github.event.inputs.bit7z_version }}/include `
+              ./bit7z-${{ github.event.inputs.bit7z_version }}/lib `
+              ./bit7z-${{ github.event.inputs.bit7z_version }}/cmake-opts.txt `
               ./7zip
 
         - name: Upload Artifact (Windows)
