@@ -4,7 +4,7 @@ on:
     workflow_dispatch:
         inputs:
             bit7z_version:
-                description: "bit7z版本 (如v4.0.12) "
+                description: "bit7z版本 (如4.0.12) "
                 required: true
                 type: string
 
@@ -36,8 +36,8 @@ jobs:
 
             - name: Download bit7z source code & extract
               run: |
-                wget "https://github.com/rikyoz/bit7z/archive/refs/tags/${{ github.event.inputs.bit7z_version }}.tar.gz"
-                tar -xzf ${{ github.event.inputs.bit7z_version }}.tar.gz
+                wget "https://github.com/rikyoz/bit7z/archive/refs/tags/v${{ github.event.inputs.bit7z_version }}.tar.gz"
+                tar -xzf v${{ github.event.inputs.bit7z_version }}.tar.gz
             
             - name: Prepare build environment
               run: |
