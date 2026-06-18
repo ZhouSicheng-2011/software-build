@@ -5,12 +5,15 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:   # 支持手动触发
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # 临时解决 Node.js 警告
     strategy:
+      fail-fast: false    # 防止一个失败导致全部取消
       matrix:
         include:
           - image: quay.io/pypa/manylinux2014_x86_64
@@ -22,11 +25,10 @@ jobs:
 
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5   # 升级到 v5 或 v6
 
       - name: 安装编译工具（gcc、make）
         run: |
-          # manylinux 镜像自带 gcc，但为保证版本一致，显式安装
           yum install -y gcc make
           gcc --version
 
@@ -36,7 +38,7 @@ jobs:
       - name: 列出产物
         run: ls -la
 
-      - name: 上传二进制工件（按环境区分）
+      - name: 上传二进制工件
         uses: actions/upload-artifact@v4
         with:
           name: asmc-${{ matrix.label }}
