@@ -15,8 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: quay.io/pypa/manylinux2014_x86_64
-            label: manylinux2014
           - image: quay.io/pypa/manylinux_2_28_x86_64
             label: manylinux_2_28
 
