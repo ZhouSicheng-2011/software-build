@@ -118,6 +118,35 @@ jobs:
 
         - name: Upload Artifact (Windows)
           uses: actions/upload-artifact@v4
-          with:
+          with: 
             name: bit7z-${{ github.event.inputs.bit7z_version }}-windows-msvc
             path: bit7z-${{ github.event.inputs.bit7z_version }}-windows-msvc.tar.gz
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-for-manylinux_2_28, build-for-windows]
+    # 授予写入权限，允许创建 Release
+    permissions:
+      contents: write
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.bit7z_version != ''
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: List downloaded files
+        run: ls -la ./artifacts
+
+      - name: Create GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: bit7z-v${{ github.event.inputs.bit7z_version }}
+          name: Release bit7z-v${{ github.event.inputs.bit7z_version }}
+          draft: false
+          prerelease: false
+          files: |
+            ./artifacts/**/*.tar.gz
+          overwrite: true   # 如果 tag 已存在则覆盖
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
