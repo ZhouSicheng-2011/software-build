@@ -10,36 +10,41 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # 临时解决 Node.js 警告
     strategy:
-      fail-fast: false    # 防止一个失败导致全部取消
+      fail-fast: false
       matrix:
         include:
           - image: quay.io/pypa/manylinux2014_x86_64
             label: manylinux2014
           - image: quay.io/pypa/manylinux_2_28_x86_64
             label: manylinux_2_28
-    container:
-      image: ${{ matrix.image }}
 
     steps:
-      - name: 检出代码
-        uses: actions/checkout@v5   # 升级到 v5 或 v6
+      # 1. 关键：显式下载 asmc_linux 的源代码（这就是你想要的“下载源代码包”步骤）
+      - name: Download asmc_linux source code
+        uses: actions/checkout@v5
+        with:
+          repository: nidud/asmc_linux   # 指定外部仓库
+          ref: main                      # 指定分支（可选）
+          path: asmc_linux               # 指定存放的文件夹名
 
-      - name: 安装编译工具（gcc、make）
+      # 2. 在容器内编译（挂载整个工作区，进入 asmc_linux 子目录编译）
+      - name: Compile inside ${{ matrix.label }}
         run: |
-          yum install -y gcc make
-          gcc --version
+          docker run --rm \
+            -v "${{ github.workspace }}:/workspace" \
+            -w /workspace/asmc_linux \
+            ${{ matrix.image }} \
+            bash -c "
+              echo '=== Compiler version ==='
+              gcc --version
+              echo '=== Starting build ==='
+              make
+            "
 
-      - name: 编译 asmc
-        run: make
-
-      - name: 列出产物
-        run: ls -la
-
-      - name: 上传二进制工件
+      # 3. 上传产物（注意：产物在 asmc_linux 子目录下）
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: asmc-${{ matrix.label }}
-          path: ./asmc
+          path: ./asmc_linux/asmc
