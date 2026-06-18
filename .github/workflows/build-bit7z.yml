@@ -62,3 +62,63 @@ jobs:
               with:
                 name: bit7z-${{ github.event.inputs.bit7z_version }}-manylinux_2_28
                 path: bit7z-${{ github.event.inputs.bit7z_version }}-manylinux_2_28.tar.gz
+
+    # ==================== Windows (MSVC) ====================
+    build-for-windows:
+      runs-on: windows-latest
+      steps:
+        - name: Setup MSVC Developer Command Prompt
+          uses: ilammy/msvc-dev-cmd@v1
+          with:
+            arch: x64
+
+        - name: Download 7zip-zstd source code & build 7-zip DLL
+          shell: bash
+          run: |
+            mkdir 7zip-build
+            mkdir 7zip
+            cd 7zip-build
+            curl -L -o v26.01-v1.5.7-R1.tar.gz https://github.com/mcmilk/7-Zip-zstd/archive/refs/tags/v26.01-v1.5.7-R1.tar.gz
+            tar -xzf v26.01-v1.5.7-R1.tar.gz
+            cd 7-Zip-zstd-26.01-v1.5.7-R1/CPP/7zip/Bundles/Format7zF
+            nmake -f makefile.msvc USE_ASM=1 PLATFORM=x64
+            cd ../../../../../..
+            cp 7zip-build/7-Zip-zstd-26.01-v1.5.7-R1/CPP/7zip/Bundles/Format7zF/_o/7z.dll 7zip/7z.dll
+            cp 7zip-build/v26.01-v1.5.7-R1.tar.gz v26.01-v1.5.7-R1.tar.gz
+            rm -rf 7zip-build
+
+        - name: Download bit7z source code & extract
+          shell: bash
+          run: |
+            curl -L -o v${{ github.event.inputs.bit7z_version }}.tar.gz "https://github.com/rikyoz/bit7z/archive/refs/tags/v${{ github.event.inputs.bit7z_version }}.tar.gz"
+            tar -xzf v${{ github.event.inputs.bit7z_version }}.tar.gz
+
+        - name: Prepare build, CMake, compile (NMake)
+          shell: bash
+          run: |
+            cd bit7z-${{ github.event.inputs.bit7z_version }}
+            mkdir build
+            cd build
+            tar -xzf ../../v26.01-v1.5.7-R1.tar.gz
+            cmake -S .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1
+            echo cmake -S .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 > ../cmake-opts.txt
+            nmake
+
+        - name: Collect all targets (Windows)
+          shell: bash
+          run: |
+            # 确保 lib 目录存在并复制库文件
+            mkdir -p bit7z-${{ github.event.inputs.bit7z_version }}/lib
+            cp bit7z-${{ github.event.inputs.bit7z_version }}/build/*.lib bit7z-${{ github.event.inputs.bit7z_version }}/lib/ 2>/dev/null || true
+            cp bit7z-${{ github.event.inputs.bit7z_version }}/build/*.dll bit7z-${{ github.event.inputs.bit7z_version }}/lib/ 2>/dev/null || true
+            tar -czvf bit7z-${{ github.event.inputs.bit7z_version }}-windows.tar.gz \
+              ./bit7z-${{ github.event.inputs.bit7z_version }}/include \
+              ./bit7z-${{ github.event.inputs.bit7z_version }}/lib \
+              ./bit7z-${{ github.event.inputs.bit7z_version }}/cmake-opts.txt \
+              ./7zip
+
+        - name: Upload Artifact (Windows)
+          uses: actions/upload-artifact@v4
+          with:
+            name: bit7z-${{ github.event.inputs.bit7z_version }}-windows
+            path: bit7z-${{ github.event.inputs.bit7z_version }}-windows.tar.gz
