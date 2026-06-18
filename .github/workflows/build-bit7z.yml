@@ -14,30 +14,58 @@ jobs:
         container:
             image: quay.io/pypa/manylinux_2_28_x86_64
         steps:
-            - uses: actions/checkout@v4
             - name: Install packages
               run: yum install -y tar wget
 
-            - name: Download 7zip-zstd source code & extract & build 7-zip shared library
+            - name: Download 7zip-zstd source code + asmc-linux & extract & build 7-zip shared library
               run: |
                 mkdir 7zip-build
+                mkdir 7zip
                 cd 7zip-build
                 wget https://github.com/mcmilk/7-Zip-zstd/archive/refs/tags/v26.01-v1.5.7-R1.tar.gz
+                wget https://github.com/ZhouSicheng-2011/software-build/releases/download/asmc-linux-2.36/asmc-manylinux_2_28.tar.gz
+                tar -xzf asmc-manylinux_2_28.tar.gz
+                chmod +x asmc
                 tar -xzf v26.01-v1.5.7-R1.tar.gz
-                cd 7-Zip-zstd-26.01-v1.5.7-R1
-                cd
+                cd 7-Zip-zstd-26.01-v1.5.7-R1/CPP/7zip/Bundles/Format7zF
+                make -f makefile.gcc -j1 USE_ASM=1 ASM=../../../../../asmc
+                cd ../../../../../..
+                cp 7zip-build/7-Zip-zstd-26.01-v1.5.7-R1/CPP/7zip/Bundles/Format7zF/_o/7z.so 7zip/7z.so
+                cp 7zip-build/v26.01-v1.5.7-R1.tar.gz v26.01-v1.5.7-R1.tar.gz
+                rm -rf 7zip-build
 
             - name: Download bit7z source code & extract
               run: |
                 wget "https://github.com/rikyoz/bit7z/archive/refs/tags/${{ github.event.inputs.bit7z_version }}.tar.gz"
-                tar -xzf ${{ github.event.inputs.bit7z_version }}.zip
+                tar -xzf ${{ github.event.inputs.bit7z_version }}.tar.gz
             
             - name: Prepare build environment
               run: |
                 cd bit7z-${{ github.event.inputs.bit7z_version }}
                 mkdir build
                 cd build
+                tar -xzf ../../v26.01-v1.5.7-R1.tar.gz
             
             - name: Run CMake configuration
               run: |
-                cmake -S .. -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON
+                cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1
+                echo cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 > ../cmake-opts.txt
+
+            - name: Run make to compile
+              run: |
+                make -j1
+            
+            - name: Collect all targets
+              run: |
+                cd ../..
+                tar -czvf bit7z-${{ github.event.inputs.bit7z_version }}-manylinux_2_28.tar.gz \
+                ./bit7z-${{ github.event.inputs.bit7z_version }}/include \
+                ./bit7z-${{ github.event.inputs.bit7z_version }}/lib \
+                ./bit7z-${{ github.event.inputs.bit7z_version }}/cmake-opts.txt \
+                ./7zip
+
+            - name: Upload Artifact (tar.gz)
+              uses: actions/upload-artifact@v4
+              with:
+                name: bit7z-${{ github.event.inputs.bit7z_version }}-manylinux_2_28
+                path: bit7z-${{ github.event.inputs.bit7z_version }}-manylinux_2_28.tar.gz
