@@ -154,7 +154,7 @@ jobs:
                 1. **Linux** : manylinux_2_28 (GCC 14.2.1) + ASM optimization (ASMC 2.36)
                 2. **Windows**: Visual Studio 2022 (MSVC 2022) + ASM optimization (MASM)
 
-              ### 🔧 Contents
+              ### 🔧Contents
               - bit7z static library (`lib/x64/libbit7z.a` / `lib/x64/bit7z.lib`)
               - bit7z headers (`include/`)
               - 7-Zip shared library (`7z.so` / `7z.dll`)
