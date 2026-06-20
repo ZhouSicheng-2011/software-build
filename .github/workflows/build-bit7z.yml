@@ -47,7 +47,7 @@ jobs:
                 tar -xzf ../../v26.01-v1.5.7-R1.tar.gz
                 cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1
                 echo cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 > ../cmake-opts.txt
-                make -j1
+                cmake --build . -j 1 --config Release
             
             - name: Collect all targets
               run: |
@@ -104,7 +104,7 @@ jobs:
             tar -xzf ../../v26.01-v1.5.7-R1.tar.gz
             cmake -S .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 -B .
             echo cmake -S .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 -B . > ../cmake-opts.txt
-            nmake
+            cmake --build . -j 1 --config Release
 
         - name: Collect all targets (Windows)
           shell: pwsh
