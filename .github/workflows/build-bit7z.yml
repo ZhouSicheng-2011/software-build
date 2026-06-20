@@ -45,13 +45,13 @@ jobs:
                 mkdir build
                 cd build
                 tar -xzf ../../v26.01-v1.5.7-R1.tar.gz
-                cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1
-                echo cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 > ../cmake-opts.txt
+                cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1
+                echo cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 > ../cmake-opts.txt
                 cmake --build . -j 1 --config Release
             
             - name: Collect all targets
               run: |
-                tar -czvf bit7z-${{ github.event.inputs.bit7z_version }}-manylinux_2_28.tar.gz \
+                tar -czvf bit7z-${{ github.event.inputs.bit7z_version }}-linux-gcc.tar.gz \
                 bit7z-${{ github.event.inputs.bit7z_version }}/include \
                 bit7z-${{ github.event.inputs.bit7z_version }}/lib \
                 bit7z-${{ github.event.inputs.bit7z_version }}/cmake-opts.txt \
@@ -60,8 +60,8 @@ jobs:
             - name: Upload Artifact (tar.gz)
               uses: actions/upload-artifact@v4
               with:
-                name: bit7z-${{ github.event.inputs.bit7z_version }}-manylinux_2_28
-                path: bit7z-${{ github.event.inputs.bit7z_version }}-manylinux_2_28.tar.gz
+                name: bit7z-${{ github.event.inputs.bit7z_version }}-linux-gcc
+                path: bit7z-${{ github.event.inputs.bit7z_version }}-linux-gcc.tar.gz
 
     # ==================== Windows (MSVC) ====================
     build-for-windows:
@@ -102,8 +102,8 @@ jobs:
             mkdir build
             cd build
             tar -xzf ../../v26.01-v1.5.7-R1.tar.gz
-            cmake -S .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 -B .
-            echo cmake -S .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DCUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 -B . > ../cmake-opts.txt
+            cmake -S .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 -B .
+            echo cmake -S .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH=7-Zip-zstd-26.01-v1.5.7-R1 -B . > ../cmake-opts.txt
             cmake --build . -j 1 --config Release
 
         - name: Collect all targets (Windows)
@@ -143,6 +143,21 @@ jobs:
           with:
             tag_name: bit7z-v${{ github.event.inputs.bit7z_version }}
             name: Release bit7z-v${{ github.event.inputs.bit7z_version }}
+            body: |
+              ## bit7z-${{ github.event.inputs.bit7z_version }}
+
+              ### 📦Download notice:
+                1. **Linux** (Uses manylinux_2_28 image): `bit7z-${{ github.event.inputs.bit7z_version }}-linux-gcc.tar.gz`
+                2. **Windows** (Uses Windows-2022, MSVC 2022): `bit7z-${{ github.event.inputs.bit7z_version }}-windows-msvc.tar.gz`
+
+              ### ✨Build environment:
+                1. **Linux** : manylinux_2_28 (GCC 14.2.1) + ASM optimization (ASMC 2.36)
+                2. **Windows**: Visual Studio 2022 (MSVC 2022) + ASM optimization (MASM)
+
+              ### 🔧 包含内容
+              - bit7z static library (`lib/x64/libbit7z.a` / `lib/x64/bit7z.lib`)
+              - bit7z headers (`include/`)
+              - 7-Zip shared library (`7z.so` / `7z.dll`)
             draft: false
             prerelease: false
             files: |
