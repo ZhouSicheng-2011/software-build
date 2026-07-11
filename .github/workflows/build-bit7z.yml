@@ -46,8 +46,8 @@ jobs:
                 cd build
                 tar -xzf ../../v26.01-v1.5.7-R1.tar.gz
                 SEVENZIP=$(readlink -f 7-Zip-zstd-26.01-v1.5.7-R1)
-                cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH="$SEVENZIP" -B .
-                echo cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH="$SEVENZIP" -B . > ../cmake-opts.txt
+                cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH="$SEVENZIP" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -B .
+                echo cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH="$SEVENZIP" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -B . > ../cmake-opts.txt
                 cmake --build . -j 1 --config Release
             
             - name: Collect all targets
