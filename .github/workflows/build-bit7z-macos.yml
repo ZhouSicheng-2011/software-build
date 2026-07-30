@@ -24,7 +24,7 @@ jobs:
                 tar -xzf v26.01-v1.5.7-R1.tar.gz
                 cd 7-Zip-zstd-26.01-v1.5.7-R1/CPP/7zip/Bundles/Format7zF
                 export SDKROOT=`xcrun --sdk macosx --show-sdk-path`
-                export MACOSX_DEPLOYMENT_TARGET=10.13
+                export MACOSX_DEPLOYMENT_TARGET=10.15
                 make -f makefile.gcc -j1 USE_ASM=1 ASM=yasm
                 ls -la _o
                 cd ../../../../../..
@@ -44,8 +44,8 @@ jobs:
                 cd build
                 tar -xzf ../../v26.01-v1.5.7-R1.tar.gz
                 SEVENZIP=$(realpath 7-Zip-zstd-26.01-v1.5.7-R1)
-                cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH="$SEVENZIP" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBIT7Z_BUILD_TESTS=ON -B .
-                echo cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH="$SEVENZIP" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBIT7Z_BUILD_TESTS=ON -B . > ../cmake-opts.txt
+                cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH="$SEVENZIP" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBIT7Z_BUILD_TESTS=ON -B .
+                echo cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH="$SEVENZIP" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBIT7Z_BUILD_TESTS=ON -B . > ../cmake-opts.txt
                 cmake --build . -j 1 --config Release
             
             - name: Collect all targets
