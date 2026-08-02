@@ -12,8 +12,8 @@ jobs:
     build-for-macos:
         runs-on: macos-latest
         steps:
-            - name: Install packages (YASM for optimizations)
-              run: brew install yasm
+            - name: Install packages (YASM for optimizations, p7zip for and only for test)
+              run: brew install yasm p7zip
 
             - name: Download 7zip-zstd source code & extract & build 7-zip shared library
               run: |
@@ -47,6 +47,12 @@ jobs:
                 cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=13.3 -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH="$SEVENZIP" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBIT7Z_BUILD_TESTS=ON -B .
                 echo cmake -S .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=13.3 -DBIT7Z_AUTO_FORMAT=ON -DBIT7Z_REGEX_MATCHING=ON -DBIT7Z_CUSTOM_7ZIP_PATH="$SEVENZIP" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBIT7Z_BUILD_TESTS=ON -B . > ../cmake-opts.txt
                 cmake --build . -j 1 --config Release
+
+            - name: Run test (optional)
+              run: |
+                cd bit7z-${{ github.event.inputs.bit7z_version }}/build
+                ctest --output-on-failure -j1
+              continue-on-error: true
             
             - name: Collect all targets
               run: |
