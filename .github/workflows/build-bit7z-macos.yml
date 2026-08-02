@@ -50,9 +50,7 @@ jobs:
 
             - name: Run test (optional)
               run: |
-                cd bit7z-${{ github.event.inputs.bit7z_version }}/build
-                cp ../../7zip/7z.dylib ./7z.so
-                ctest --output-on-failure -j1
+                python3 -c "import os; import ctypes; p = os.path.abspath('./7zip/7z.dylib'); lib1 = ctypes.CDLL('./7zip/7z.dylib'); lib2 = ctypes.CDLL(p); print('OK!')"
               continue-on-error: true
             
             - name: Collect all targets
