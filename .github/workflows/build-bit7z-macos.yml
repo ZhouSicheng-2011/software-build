@@ -51,6 +51,7 @@ jobs:
             - name: Run test (optional)
               run: |
                 cd bit7z-${{ github.event.inputs.bit7z_version }}/build
+                ln -sf ../../7zip/7z.dylib ./7z.so
                 ctest --output-on-failure -j1
               continue-on-error: true
             
