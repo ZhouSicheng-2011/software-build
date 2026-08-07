@@ -1,4 +1,4 @@
-name: Build and Release Asmc
+name: Build and Release UASM on Linux ARM64
 
 on:
   workflow_dispatch:
@@ -10,47 +10,40 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - image: quay.io/pypa/manylinux_2_28_x86_64
-            label: manylinux_2_28
+    runs-on: ubuntu-24.04-arm
+    container:
+      image: quay.io/pypa/manylinux_2_28_aarch64
 
     steps:
-      - name: Checkout asmc_linux source
-        uses: actions/checkout@v5
-        with:
-          repository: nidud/asmc_linux
-          ref: main
-          path: asmc_linux
-
-      - name: Compile inside ${{ matrix.label }}
+      - name: Install Packages
         run: |
-          docker run --rm \
-            -v "${{ github.workspace }}:/workspace" \
-            -w /workspace/asmc_linux \
-            ${{ matrix.image }} \
-            bash -c "
-              echo '=== Compiler version ==='
-              gcc --version
-              echo '=== Patch Makefile for PIE compatibility ==='
-              sed -i 's/gcc -c src\/\*\.s/gcc -c -fPIE src\/\*\.s/' Makefile
-              echo '=== Starting build ==='
-              make all
-            "
+          yum install -y tar wget
 
-      - name: Create tar.gz archive
+      - name: Download UASM source & extract
         run: |
-          cd asmc_linux
-          tar -czvf asmc-${{ matrix.label }}.tar.gz asmc
+          wget https://github.com/Terraspace/UASM/archive/refs/tags/v2.57r.tar.gz
+          tar -xzf v2.57r.tar.gz
+
+      - name: Run build
+        run: |
+          cd UASM-2.57r
+          make -f Makefile-Linux-GCC-64.mak
+          cp GccUnixR/uasm ../uasm
+
+      - name: Verify targets
+        run: |
+          file uasm
+          ldd uasm || echo "Static binary or no dynamic dependencies"
+
+      - name: Collect targets
+        run: |
+          tar -czvf uasm-2.57r-linux-arm64.tar.gz uasm
 
       - name: Upload artifact (tar.gz)
         uses: actions/upload-artifact@v4
         with:
-          name: asmc-${{ matrix.label }}
-          path: asmc_linux/asmc-${{ matrix.label }}.tar.gz
+          name: uasm-linux-arm64
+          path: uasm-2.57r-linux-arm64.tar.gz
 
   release:
     runs-on: ubuntu-latest
