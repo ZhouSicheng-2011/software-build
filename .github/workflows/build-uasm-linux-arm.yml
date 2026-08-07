@@ -27,7 +27,7 @@ jobs:
       - name: Run build
         run: |
           cd UASM-2.57r
-          make -f Makefile-Linux-GCC-64.mak CFLAGS="-Wno-implicit-function-declaration -Wno-error=implicit-function-declaration"
+          make -f Makefile-Linux-GCC-64.mak CFLAGS="-Wno-implicit-function-declaration -Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types -fpermissive"
           cp GccUnixR/uasm ../uasm
 
       - name: Verify targets
